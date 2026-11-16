@@ -19,7 +19,8 @@ import (
 type SecurityConfig struct {
 	// HSTSMaxAge is the `max-age` (seconds) emitted in the
 	// Strict-Transport-Security header. The header is only sent on TLS
-	// requests (or when the inbound `X-Forwarded-Proto` is `https`), so
+	// requests (or, in proxy mode, when a trusted proxy forwards
+	// `X-Forwarded-Proto: https`; see configureProxySupport), so
 	// it's safe to leave a non-zero default even on the plain HTTP
 	// listener — the middleware suppresses HSTS unless the request is
 	// secure end-to-end.

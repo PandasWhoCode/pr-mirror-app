@@ -10,10 +10,17 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
-// configureProxySupport wires the IP-extractor for both servers based on
-// the proxy config. Mutually-exclusive-flag validation is enforced earlier
-// at Configure time via ProxyConfig.Validate, so by the time we reach here
-// at most one of the three flags is true.
+// configureProxySupport wires the IP and scheme extractors for both servers
+// based on the proxy config. Mutually-exclusive-flag validation is enforced
+// earlier at Configure time via ProxyConfig.Validate, so by the time we reach
+// here at most one of the three flags is true.
+//
+// The scheme extractor decides whether a request counts as HTTPS, which
+// drives the HSTS header and the HTTPS redirect. Forwarded scheme headers
+// (X-Forwarded-Proto and friends) are honored only in proxy mode and only
+// from the same addresses trusted for the client IP; in direct mode only
+// the connection itself counts. Trusting those headers from any client let
+// a caller fake HTTPS (GO-2026-6879).
 func (app *Application) configureProxySupport() error {
 	pc := app.config.Proxy
 	if pc == nil {
@@ -35,6 +42,14 @@ func (app *Application) configureProxySupport() error {
 
 	app.httpServer.IPExtractor = extractor
 	app.tlsServer.IPExtractor = extractor
+
+	schemeExtractor := echo.ExtractSchemeDirect()
+	if pc.UseXRealIPHeader || pc.UseXFFHeader {
+		schemeExtractor = echo.ExtractSchemeFromHeaders(app.resolveProxyTrustOptions()...)
+	}
+
+	app.httpServer.SchemeExtractor = schemeExtractor
+	app.tlsServer.SchemeExtractor = schemeExtractor
 	return nil
 }
 

@@ -146,7 +146,7 @@ All keys are prefixed with `PRMIRROR_`. Examples:
 | `PRMIRROR_SERVER_CORS_ALLOW_HEADERS`       | —            | Comma-separated request-header allowlist                                                                  |
 | `PRMIRROR_SERVER_CORS_ALLOW_CREDENTIALS`   | `false`      | Allow cookies/auth headers in cross-origin requests. Cannot be combined with wildcard origins.            |
 | `PRMIRROR_SERVER_CORS_MAX_AGE`             | `0`          | Preflight cache lifetime in seconds                                                                       |
-| `PRMIRROR_SERVER_SECURITY_HSTS_MAX_AGE`            | `31536000`   | `Strict-Transport-Security` max-age (seconds). `0` suppresses the header. Emitted only on TLS requests (or `X-Forwarded-Proto: https`). |
+| `PRMIRROR_SERVER_SECURITY_HSTS_MAX_AGE`            | `31536000`   | `Strict-Transport-Security` max-age (seconds). `0` suppresses the header. Emitted only on TLS requests, or in proxy mode (`PRMIRROR_PROXY_USE_XFF_HEADER` / `PRMIRROR_PROXY_USE_X_REAL_IP_HEADER`) when a trusted proxy sends `X-Forwarded-Proto: https`. |
 | `PRMIRROR_SERVER_SECURITY_HSTS_EXCLUDE_SUBDOMAINS` | `false`      | When `true`, drops the `includeSubDomains` directive from HSTS.                                                                         |
 | `PRMIRROR_SERVER_SECURITY_HSTS_PRELOAD_ENABLED`    | `false`      | When `true`, adds the `preload` directive. Preload submission is one-way — opt in deliberately.                                          |
 | `PRMIRROR_SERVER_SECURITY_CONTENT_SECURITY_POLICY` | —            | `Content-Security-Policy` header value (sent verbatim when non-empty). Empty by default to avoid breaking the bundled Swagger UI.        |
