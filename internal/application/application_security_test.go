@@ -35,42 +35,45 @@ func TestSecurityMiddleware_HSTSOnTLS(t *testing.T) {
 }
 
 // TestSecurityMiddleware_HSTSViaTrustedProxy covers TLS terminated at a load
-// balancer: in proxy mode, X-Forwarded-Proto=https from a trusted proxy
-// address (here a private-network peer, trusted by default) counts as HTTPS.
+// balancer: in either proxy mode, X-Forwarded-Proto=https from a trusted
+// proxy counts as HTTPS. The proxy is trusted either by Echo's defaults (a
+// private-network peer) or through TrustedIPRanges (a public address such as
+// a CDN or cloud load balancer), which checks that the configured ranges
+// reach the scheme extractor.
 func TestSecurityMiddleware_HSTSViaTrustedProxy(t *testing.T) {
-	app := newAppWithMiddleware(t, proxyModeConfig())
+	cases := []struct {
+		name       string
+		remoteAddr string
+		trusted    []string
+	}{
+		{name: "private peer, default trust", remoteAddr: "10.0.0.5:43210"},
+		{name: "public peer, configured range", remoteAddr: "203.0.113.7:443", trusted: []string{"203.0.113.0/24"}},
+	}
 
-	app.httpServer.GET("/probe", func(c *echo.Context) error {
-		return c.String(http.StatusOK, "ok")
-	})
-
-	req := httptest.NewRequest(http.MethodGet, "/probe", nil)
-	req.RemoteAddr = "10.0.0.5:43210"
-	req.Header.Set(echo.HeaderXForwardedProto, "https")
-	rec := httptest.NewRecorder()
-	app.httpServer.ServeHTTP(rec, req)
-
-	assertDefaultHSTS(t, rec.Header().Get(echo.HeaderStrictTransportSecurity))
+	for _, mode := range proxyModes {
+		for _, tc := range cases {
+			t.Run(mode+"/"+tc.name, func(t *testing.T) {
+				app := newAppWithMiddleware(t, proxyModeConfig(mode, tc.trusted...))
+				rec := serveProbe(app, tc.remoteAddr, "https")
+				assertDefaultHSTS(t, rec.Header().Get(echo.HeaderStrictTransportSecurity))
+			})
+		}
+	}
 }
 
 // TestSecurityMiddleware_NoHSTSFromUntrustedForwardedProto guards against a
-// client faking HTTPS (GO-2026-6879): in proxy mode, X-Forwarded-Proto from
-// an address that isn't a trusted proxy is ignored.
+// client faking HTTPS (GO-2026-6879): in either proxy mode, X-Forwarded-Proto
+// from an address that isn't a trusted proxy is ignored.
 func TestSecurityMiddleware_NoHSTSFromUntrustedForwardedProto(t *testing.T) {
-	app := newAppWithMiddleware(t, proxyModeConfig())
-
-	app.httpServer.GET("/probe", func(c *echo.Context) error {
-		return c.String(http.StatusOK, "ok")
-	})
-
-	req := httptest.NewRequest(http.MethodGet, "/probe", nil)
-	req.RemoteAddr = "192.0.2.1:43210" // public (TEST-NET-1), not a trusted proxy
-	req.Header.Set(echo.HeaderXForwardedProto, "https")
-	rec := httptest.NewRecorder()
-	app.httpServer.ServeHTTP(rec, req)
-
-	if hsts := rec.Header().Get(echo.HeaderStrictTransportSecurity); hsts != "" {
-		t.Fatalf("did not expect HSTS for a forwarded scheme from an untrusted address, got %q", hsts)
+	for _, mode := range proxyModes {
+		t.Run(mode, func(t *testing.T) {
+			app := newAppWithMiddleware(t, proxyModeConfig(mode, "203.0.113.0/24"))
+			// public (TEST-NET-1), outside both the defaults and the configured range
+			rec := serveProbe(app, "192.0.2.1:43210", "https")
+			if hsts := rec.Header().Get(echo.HeaderStrictTransportSecurity); hsts != "" {
+				t.Fatalf("did not expect HSTS for a forwarded scheme from an untrusted address, got %q", hsts)
+			}
+		})
 	}
 }
 
@@ -160,6 +163,36 @@ func TestSecurityMiddleware_AlwaysOnHeaders(t *testing.T) {
 	}
 }
 
+// TestHTTPSRedirect_FollowsSchemeExtractor checks the HTTP-to-HTTPS redirect
+// uses the same trust rule as HSTS. A trusted proxy that terminated TLS and
+// forwards X-Forwarded-Proto: https must reach the handler (redirecting it
+// again would loop through the proxy); the same header from an untrusted
+// peer, or from any peer in direct mode, still gets the 308.
+func TestHTTPSRedirect_FollowsSchemeExtractor(t *testing.T) {
+	cases := []struct {
+		name       string
+		cfg        *Config
+		remoteAddr string
+		wantCode   int
+	}{
+		{name: "xff mode, trusted proxy", cfg: proxyModeConfig(proxyModeXFF), remoteAddr: "10.0.0.5:43210", wantCode: http.StatusOK},
+		{name: "x-real-ip mode, trusted proxy", cfg: proxyModeConfig(proxyModeXRealIP), remoteAddr: "10.0.0.5:43210", wantCode: http.StatusOK},
+		{name: "xff mode, untrusted peer", cfg: proxyModeConfig(proxyModeXFF), remoteAddr: "192.0.2.1:43210", wantCode: http.StatusPermanentRedirect},
+		{name: "direct mode, loopback peer", cfg: DefaultConfig(), remoteAddr: "127.0.0.1:43210", wantCode: http.StatusPermanentRedirect},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.cfg.Server.Https.Enabled = true
+			app := newAppWithMiddleware(t, tc.cfg)
+			rec := serveProbe(app, tc.remoteAddr, "https")
+			if rec.Code != tc.wantCode {
+				t.Fatalf("expected %d, got %d (Location %q)", tc.wantCode, rec.Code, rec.Header().Get("Location"))
+			}
+		})
+	}
+}
+
 // newAppWithMiddleware builds an Application, wires the middleware stack from
 // the supplied config, and configures the HTTP server and the proxy-dependent
 // IP and scheme extractors. Mirrors the production boot order
@@ -178,13 +211,48 @@ func newAppWithMiddleware(t *testing.T, cfg *Config) *Application {
 	return app
 }
 
-// proxyModeConfig returns the default config switched to X-Forwarded-For
-// proxy mode with the default trust set (loopback, link-local, private nets).
-func proxyModeConfig() *Config {
+const (
+	proxyModeXFF     = "xff"
+	proxyModeXRealIP = "x-real-ip"
+)
+
+// proxyModes lists both header-based proxy modes so trust tests run in each.
+var proxyModes = []string{proxyModeXFF, proxyModeXRealIP}
+
+// proxyModeConfig returns the default config switched to the given proxy
+// mode, trusting the default set (loopback, link-local, private nets) plus
+// any extra CIDR ranges.
+func proxyModeConfig(mode string, trustedRanges ...string) *Config {
 	cfg := DefaultConfig()
 	cfg.Proxy.UseDirectIP = false
-	cfg.Proxy.UseXFFHeader = true
+	switch mode {
+	case proxyModeXFF:
+		cfg.Proxy.UseXFFHeader = true
+	case proxyModeXRealIP:
+		cfg.Proxy.UseXRealIPHeader = true
+	default:
+		panic("unknown proxy mode " + mode)
+	}
+	cfg.Proxy.TrustedIPRanges = trustedRanges
 	return cfg
+}
+
+// serveProbe registers GET /probe on the HTTP server and sends it one
+// plain-HTTP request from remoteAddr, with X-Forwarded-Proto set to
+// forwardedProto when non-empty.
+func serveProbe(app *Application, remoteAddr, forwardedProto string) *httptest.ResponseRecorder {
+	app.httpServer.GET("/probe", func(c *echo.Context) error {
+		return c.String(http.StatusOK, "ok")
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/probe", nil)
+	req.RemoteAddr = remoteAddr
+	if forwardedProto != "" {
+		req.Header.Set(echo.HeaderXForwardedProto, forwardedProto)
+	}
+	rec := httptest.NewRecorder()
+	app.httpServer.ServeHTTP(rec, req)
+	return rec
 }
 
 // assertDefaultHSTS checks the header carries the default one-year max-age

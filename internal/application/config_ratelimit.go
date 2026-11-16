@@ -20,8 +20,8 @@ import (
 // same threat (overwhelmed server) at different layers:
 //
 //   - Rate / Burst is a per-client request-rate limit at the middleware
-//     layer keyed off c.RealIP(). Honours PRMIRROR_TRUSTED_IP_RANGES so it
-//     keys by the real client even behind a trusted proxy.
+//     layer keyed off c.RealIP(). Honours PRMIRROR_PROXY_TRUSTED_IP_RANGES so
+//     it keys by the real client even behind a trusted proxy.
 //   - MaxConnections caps total concurrent TCP connections at the
 //     listener layer via netutil.LimitListener. Excess connections are
 //     accepted only after one closes, providing a hard ceiling that

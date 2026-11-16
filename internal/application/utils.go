@@ -264,7 +264,12 @@ func HTTPSRedirectWithConfig(cfg *TlsConfig) echo.MiddlewareFunc {
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c *echo.Context) error {
-			if c.Request().TLS != nil {
+			// c.Scheme() applies the server's SchemeExtractor (see
+			// configureProxySupport): in proxy mode, a trusted proxy that
+			// terminated TLS and sent X-Forwarded-Proto: https isn't
+			// redirected again (that would loop); otherwise only a real
+			// TLS connection counts.
+			if c.Scheme() == "https" {
 				return next(c)
 			}
 

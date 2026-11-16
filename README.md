@@ -131,7 +131,7 @@ All keys are prefixed with `PRMIRROR_`. Examples:
 | `PRMIRROR_SERVER_HTTP_WRITE_TIMEOUT`       | `30s`        | Max time to write response (HTTP)           |
 | `PRMIRROR_SERVER_HTTP_IDLE_TIMEOUT`        | `120s`       | Keep-alive idle timeout (HTTP)              |
 | `PRMIRROR_SERVER_HTTP_MAX_BODY_SIZE`       | `1MB`        | Max request body size; oversize → 413 (HTTP). Accepts `B`/`KB`/`MB`/`GB` suffixes or bare bytes. |
-| `PRMIRROR_SERVER_HTTPS_ENABLED`            | `false`      | Enable the TLS server                       |
+| `PRMIRROR_SERVER_HTTPS_ENABLED`            | `false`      | Enable the TLS server and 308-redirect plain-HTTP requests to it (except `/api/v1/healthz` and `/api/v1/readyz`). Requests count as HTTPS by the same rule as HSTS below, so a TLS-terminating proxy needs proxy mode. |
 | `PRMIRROR_SERVER_HTTPS_PORT`               | `8443`       | HTTPS listener port                         |
 | `PRMIRROR_SERVER_HTTPS_HOSTNAME`           | —            | Hostname presented in self-signed/ACME cert |
 | `PRMIRROR_SERVER_HTTPS_USE_ACME_ISSUER`    | `false`      | Use Let's Encrypt instead of static certs   |

@@ -16,39 +16,45 @@ import (
 // here at most one of the three flags is true.
 //
 // The scheme extractor decides whether a request counts as HTTPS, which
-// drives the HSTS header and the HTTPS redirect. Forwarded scheme headers
-// (X-Forwarded-Proto and friends) are honored only in proxy mode and only
-// from the same addresses trusted for the client IP; in direct mode only
-// the connection itself counts. Trusting those headers from any client let
-// a caller fake HTTPS (GO-2026-6879).
+// drives the HSTS header and the HTTPS redirect (HTTPSRedirectWithConfig
+// reads c.Scheme()). Forwarded scheme headers (X-Forwarded-Proto and
+// friends) are honored only in proxy mode and only from the same addresses
+// trusted for the client IP; in direct mode only the connection itself
+// counts. Trusting those headers from any client let a caller fake HTTPS
+// (GO-2026-6879).
 func (app *Application) configureProxySupport() error {
 	pc := app.config.Proxy
 	if pc == nil {
 		return nil
 	}
 
-	var extractor echo.IPExtractor
-	if pc.UseXRealIPHeader {
-		extractor = echo.ExtractIPFromRealIPHeader(app.resolveProxyTrustOptions()...)
+	var (
+		ipExtractor     echo.IPExtractor
+		schemeExtractor echo.SchemeExtractor
+	)
+
+	switch {
+	case pc.UseXFFHeader:
+		trust := app.resolveProxyTrustOptions()
+		ipExtractor = echo.ExtractIPFromXFFHeader(trust...)
+		schemeExtractor = echo.ExtractSchemeFromHeaders(trust...)
+	case pc.UseXRealIPHeader:
+		trust := app.resolveProxyTrustOptions()
+		ipExtractor = echo.ExtractIPFromRealIPHeader(trust...)
+		schemeExtractor = echo.ExtractSchemeFromHeaders(trust...)
+	default:
+		ipExtractor = echo.ExtractIPDirect()
+		schemeExtractor = echo.ExtractSchemeDirect()
 	}
 
-	if pc.UseXFFHeader {
-		extractor = echo.ExtractIPFromXFFHeader(app.resolveProxyTrustOptions()...)
-	}
-
-	if extractor == nil {
-		extractor = echo.ExtractIPDirect()
-	}
-
-	app.httpServer.IPExtractor = extractor
-	app.tlsServer.IPExtractor = extractor
-
-	schemeExtractor := echo.ExtractSchemeDirect()
-	if pc.UseXRealIPHeader || pc.UseXFFHeader {
-		schemeExtractor = echo.ExtractSchemeFromHeaders(app.resolveProxyTrustOptions()...)
-	}
+	app.httpServer.IPExtractor = ipExtractor
+	app.tlsServer.IPExtractor = ipExtractor
 
 	app.httpServer.SchemeExtractor = schemeExtractor
+	// Every request on the TLS listener has req.TLS set, and every
+	// extractor reports "https" for those, so this assignment doesn't
+	// change behaviour today. It keeps both servers on the same policy if
+	// that ever stops being true.
 	app.tlsServer.SchemeExtractor = schemeExtractor
 	return nil
 }
