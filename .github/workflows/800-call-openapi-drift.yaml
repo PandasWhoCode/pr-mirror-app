@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: Apache-2.0
+
+name: "800: [CALL] OpenAPI Drift"
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        description: "Go Version:"
+        type: string
+        required: false
+        default: "1.27.1"
+      task-version:
+        description: "Task Version:"
+        type: string
+        required: false
+        default: "3.39.2"
+      custom-job-label:
+        description: "Custom Job Label:"
+        type: string
+        required: false
+        default: "OpenAPI Drift"
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+jobs:
+  openapi-drift:
+    name: "${{ inputs.custom-job-label || 'OpenAPI Drift' }}"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Task
+        uses: arduino/setup-task@c0bc642852239c2689f73f4ea6459c29405f3c52 # v3.0.0
+        with:
+          version: ${{ inputs.task-version || '3.39.2' }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup GoLang
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version: ${{ inputs.go-version || '1.27.1' }}
+          check-latest: false
+
+      # internal/version/commit.txt and internal/openapi/logo.svg are
+      # //go:embed-ed but produced by go generate (see CLAUDE.md §
+      # "Local environment vs binary defaults"). Without this step
+      # cmd/openapi-gen fails to compile.
+      - name: Generate Version Files
+        run: task generate
+
+      - name: Verify OpenAPI Spec Matches Code
+        run: task openapi:check

@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: Apache-2.0
+
+package openapi
+
+import _ "embed"
+
+// logoSVG is the Server Curio SC mark, copied here
+// from docs/logo-mark.svg by `go generate` (see generate_unix.go) and embedded
+// so the Swagger UI topbar can serve it without depending on a file on
+// disk at runtime.
+//
+//go:embed logo.svg
+var logoSVG []byte
