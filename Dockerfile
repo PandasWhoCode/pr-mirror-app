@@ -4,7 +4,7 @@
 # Multi-arch manifest list covers linux/amd64 and linux/arm64 (the build
 # matrix's two targets). Dependabot's docker ecosystem opens PRs that bump
 # both the tag and the digest together.
-FROM ubuntu:noble-20260905@sha256:a053cbffda9d424679c103c5b4f452297efc3774a1e491c110289f726fbb5d34
+FROM ubuntu:noble-20260917@sha256:534baea6a22c03a63003dbc8dbe78fe34bc0d7e595d9a9dc9834884ff530eb55
 
 COPY ./bin/ /tmp/appsvr/
 
