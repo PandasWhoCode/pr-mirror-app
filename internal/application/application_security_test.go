@@ -166,26 +166,29 @@ func TestSecurityMiddleware_AlwaysOnHeaders(t *testing.T) {
 // TestHTTPSRedirect_FollowsSchemeExtractor checks the HTTP-to-HTTPS redirect
 // uses the same trust rule as HSTS. A trusted proxy that terminated TLS and
 // forwards X-Forwarded-Proto: https must reach the handler (redirecting it
-// again would loop through the proxy); the same header from an untrusted
-// peer, or from any peer in direct mode, still gets the 308.
+// again would loop through the proxy), and so must wss, which a proxy may
+// report for a WebSocket upgrade; the same header from an untrusted peer,
+// or from any peer in direct mode, still gets the 308.
 func TestHTTPSRedirect_FollowsSchemeExtractor(t *testing.T) {
 	cases := []struct {
 		name       string
 		cfg        *Config
 		remoteAddr string
+		proto      string
 		wantCode   int
 	}{
-		{name: "xff mode, trusted proxy", cfg: proxyModeConfig(proxyModeXFF), remoteAddr: "10.0.0.5:43210", wantCode: http.StatusOK},
-		{name: "x-real-ip mode, trusted proxy", cfg: proxyModeConfig(proxyModeXRealIP), remoteAddr: "10.0.0.5:43210", wantCode: http.StatusOK},
-		{name: "xff mode, untrusted peer", cfg: proxyModeConfig(proxyModeXFF), remoteAddr: "192.0.2.1:43210", wantCode: http.StatusPermanentRedirect},
-		{name: "direct mode, loopback peer", cfg: DefaultConfig(), remoteAddr: "127.0.0.1:43210", wantCode: http.StatusPermanentRedirect},
+		{name: "xff mode, trusted proxy", cfg: proxyModeConfig(proxyModeXFF), remoteAddr: "10.0.0.5:43210", proto: "https", wantCode: http.StatusOK},
+		{name: "x-real-ip mode, trusted proxy", cfg: proxyModeConfig(proxyModeXRealIP), remoteAddr: "10.0.0.5:43210", proto: "https", wantCode: http.StatusOK},
+		{name: "xff mode, trusted proxy, wss", cfg: proxyModeConfig(proxyModeXFF), remoteAddr: "10.0.0.5:43210", proto: "wss", wantCode: http.StatusOK},
+		{name: "xff mode, untrusted peer", cfg: proxyModeConfig(proxyModeXFF), remoteAddr: "192.0.2.1:43210", proto: "https", wantCode: http.StatusPermanentRedirect},
+		{name: "direct mode, loopback peer", cfg: DefaultConfig(), remoteAddr: "127.0.0.1:43210", proto: "https", wantCode: http.StatusPermanentRedirect},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.cfg.Server.Https.Enabled = true
 			app := newAppWithMiddleware(t, tc.cfg)
-			rec := serveProbe(app, tc.remoteAddr, "https")
+			rec := serveProbe(app, tc.remoteAddr, tc.proto)
 			if rec.Code != tc.wantCode {
 				t.Fatalf("expected %d, got %d (Location %q)", tc.wantCode, rec.Code, rec.Header().Get("Location"))
 			}
@@ -238,8 +241,8 @@ func proxyModeConfig(mode string, trustedRanges ...string) *Config {
 }
 
 // serveProbe registers GET /probe on the HTTP server and sends it one
-// plain-HTTP request from remoteAddr, with X-Forwarded-Proto set to
-// forwardedProto when non-empty.
+// plain-HTTP request from remoteAddr with X-Forwarded-Proto set to
+// forwardedProto.
 func serveProbe(app *Application, remoteAddr, forwardedProto string) *httptest.ResponseRecorder {
 	app.httpServer.GET("/probe", func(c *echo.Context) error {
 		return c.String(http.StatusOK, "ok")
@@ -247,9 +250,7 @@ func serveProbe(app *Application, remoteAddr, forwardedProto string) *httptest.R
 
 	req := httptest.NewRequest(http.MethodGet, "/probe", nil)
 	req.RemoteAddr = remoteAddr
-	if forwardedProto != "" {
-		req.Header.Set(echo.HeaderXForwardedProto, forwardedProto)
-	}
+	req.Header.Set(echo.HeaderXForwardedProto, forwardedProto)
 	rec := httptest.NewRecorder()
 	app.httpServer.ServeHTTP(rec, req)
 	return rec

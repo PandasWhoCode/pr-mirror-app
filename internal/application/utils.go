@@ -268,8 +268,9 @@ func HTTPSRedirectWithConfig(cfg *TlsConfig) echo.MiddlewareFunc {
 			// configureProxySupport): in proxy mode, a trusted proxy that
 			// terminated TLS and sent X-Forwarded-Proto: https isn't
 			// redirected again (that would loop); otherwise only a real
-			// TLS connection counts.
-			if c.Scheme() == "https" {
+			// TLS connection counts. A proxy may report wss for a
+			// WebSocket upgrade, which is just as secure.
+			if scheme := c.Scheme(); scheme == "https" || scheme == "wss" {
 				return next(c)
 			}
 
