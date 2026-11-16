@@ -2,7 +2,7 @@
 
 openapi: 3.0.3
 info:
-    title: AppSvr
+    title: PrMirror
     version: unreleased
 servers:
     - url: https://localhost:4443

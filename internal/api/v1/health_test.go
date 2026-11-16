@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/health"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/router"
 	"github.com/labstack/echo/v5"
-	"github.com/servercurio/go-echo-starter/internal/health"
-	"github.com/servercurio/go-echo-starter/internal/router"
 	asrt "github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 )

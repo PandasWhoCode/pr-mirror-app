@@ -3,8 +3,8 @@
 package v1
 
 import (
-	"github.com/servercurio/go-echo-starter/internal/api/std/module"
-	"github.com/servercurio/go-echo-starter/internal/router"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/api/std/module"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/router"
 )
 
 // Module identity and URL prefix for the v1 API submodule. Constants live at

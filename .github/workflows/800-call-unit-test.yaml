@@ -8,12 +8,12 @@ on:
         description: "Go Version:"
         type: string
         required: false
-        default: "1.27.1"
+        default: "1.27.4"
       task-version:
         description: "Task Version:"
         type: string
         required: false
-        default: "3.39.2"
+        default: "3.54.0"
       custom-job-label:
         description: "Custom Job Label:"
         type: string
@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: audit
 
@@ -52,13 +52,13 @@ jobs:
       - name: Install Task
         uses: arduino/setup-task@c0bc642852239c2689f73f4ea6459c29405f3c52 # v3.0.0
         with:
-          version: ${{ inputs.task-version || '3.39.2' }}
+          version: ${{ inputs.task-version || '3.54.0' }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup GoLang
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: ${{ inputs.go-version || '1.27.1' }}
+          go-version: ${{ inputs.go-version || '1.27.4' }}
           check-latest: false
 
       - name: Generate Version Files
@@ -68,7 +68,7 @@ jobs:
         run: task test
 
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           files: ./cover.out
           flags: unittests

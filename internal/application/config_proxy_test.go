@@ -59,7 +59,7 @@ func TestProxyConfig_Validate(t *testing.T) {
 }
 
 // TestProxyConfig_FromEnv_TrustedIPRanges pins the parsing contract for
-// APP_PROXY_TRUSTED_IP_RANGES. The pre-fix implementation panicked on
+// PRMIRROR_PROXY_TRUSTED_IP_RANGES. The pre-fix implementation panicked on
 // any non-empty value — it indexed the destination slice rather than
 // the freshly-split source — and even when the index was lucky it
 // never appended results. This table covers the matrix that broke
@@ -96,10 +96,10 @@ func TestProxyConfig_FromEnv_TrustedIPRanges(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("APP_PROXY_TRUSTED_IP_RANGES", tt.value)
+			t.Setenv("PRMIRROR_PROXY_TRUSTED_IP_RANGES", tt.value)
 
 			cfg := DefaultProxyConfig()
-			cfg.FromEnv("APP_PROXY")
+			cfg.FromEnv("PRMIRROR_PROXY")
 
 			if len(cfg.TrustedIPRanges) != len(tt.want) {
 				t.Fatalf("TrustedIPRanges length: got %v (%d), want %v (%d)",

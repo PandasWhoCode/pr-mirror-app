@@ -2,23 +2,23 @@
   ~ SPDX-License-Identifier: Apache-2.0
 -->
 
-# go-echo-starter
+# pr-mirror-app
 
-Helm chart for the [go-echo-starter](https://github.com/servercurio/go-echo-starter) HTTP daemon — Echo v5, structured logging, TLS, OpenAPI.
+Helm chart for the [pr-mirror-app](https://github.com/PandasWhoCode/pr-mirror-app) HTTP daemon — Echo v5, structured logging, TLS, OpenAPI.
 
 ## Install
 
 From the GHCR OCI registry (recommended):
 
 ```sh
-helm install my-app oci://ghcr.io/servercurio/charts/go-echo-starter --version <X.Y.Z>
+helm install my-app oci://ghcr.io/pandaswhocode/charts/pr-mirror-app --version <X.Y.Z>
 ```
 
 From a release `.tgz` asset:
 
 ```sh
-gh release download <vX.Y.Z> --repo servercurio/go-echo-starter --pattern 'go-echo-starter-*.tgz'
-helm install my-app ./go-echo-starter-<X.Y.Z>.tgz
+gh release download <vX.Y.Z> --repo PandasWhoCode/pr-mirror-app --pattern 'pr-mirror-app-*.tgz'
+helm install my-app ./pr-mirror-app-<X.Y.Z>.tgz
 ```
 
 ## Verify supply-chain attestations
@@ -26,11 +26,11 @@ helm install my-app ./go-echo-starter-<X.Y.Z>.tgz
 Every chart artifact carries a GitHub-signed Sigstore attestation. Verify before installing:
 
 ```sh
-gh attestation verify oci://ghcr.io/servercurio/charts/go-echo-starter:<X.Y.Z> --owner servercurio
-gh attestation verify ./go-echo-starter-<X.Y.Z>.tgz --owner servercurio
+gh attestation verify oci://ghcr.io/pandaswhocode/charts/pr-mirror-app:<X.Y.Z> --owner PandasWhoCode
+gh attestation verify ./pr-mirror-app-<X.Y.Z>.tgz --owner PandasWhoCode
 ```
 
-The chart `.tgz`'s SHA256 is GPG-signed: `gpg --verify go-echo-starter-<X.Y.Z>.tgz.sha256.asc go-echo-starter-<X.Y.Z>.tgz.sha256 && shasum -a 256 -c go-echo-starter-<X.Y.Z>.tgz.sha256`.
+The chart `.tgz`'s SHA256 is GPG-signed: `gpg --verify pr-mirror-app-<X.Y.Z>.tgz.sha256.asc pr-mirror-app-<X.Y.Z>.tgz.sha256 && shasum -a 256 -c pr-mirror-app-<X.Y.Z>.tgz.sha256`.
 
 ## Configuration
 
@@ -45,7 +45,7 @@ The daemon is fully env-driven. The chart exposes three paths for supplying conf
 
 ### TLS
 
-Set `tls.enabled=true` and `tls.existingSecret` to the name of an existing Kubernetes TLS Secret (with `tls.crt` and `tls.key`). The chart mounts the Secret at `tls.mountPath` and points the daemon at it via `APP_SERVER_HTTPS_CERTIFICATE` and `APP_SERVER_HTTPS_KEY`.
+Set `tls.enabled=true` and `tls.existingSecret` to the name of an existing Kubernetes TLS Secret (with `tls.crt` and `tls.key`). The chart mounts the Secret at `tls.mountPath` and points the daemon at it via `PRMIRROR_SERVER_HTTPS_CERTIFICATE` and `PRMIRROR_SERVER_HTTPS_KEY`.
 
 ### Seccomp
 
@@ -86,7 +86,7 @@ The starter binary does not currently expose `/metrics`. Enable the monitor reso
 
 See [values.yaml](./values.yaml) for the full schema; key defaults:
 
-- `image.repository`: `ghcr.io/servercurio/go-echo-starter`
+- `image.repository`: `ghcr.io/pandaswhocode/pr-mirror-app`
 - `service.port`: `8080` (HTTP), `service.httpsPort`: `8443`
 - `replicaCount`: `1`
 - `terminationGracePeriodSeconds`: `30`

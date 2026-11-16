@@ -28,8 +28,8 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/net/netutil"
 
-	ce "github.com/servercurio/go-echo-starter/internal/errors"
-	"github.com/servercurio/go-echo-starter/internal/logging"
+	ce "github.com/PandasWhoCode/pr-mirror-app/internal/errors"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/logging"
 )
 
 // InMemoryCertificate holds a PEM-encoded ECDSA keypair and certificate
@@ -461,7 +461,7 @@ func pemBytes(v any) ([]byte, error) {
 	case []byte:
 		return x, nil
 	case string:
-		return os.ReadFile(x) //nolint:gosec // G304 false positive: x is the operator-supplied APP_SERVER_HTTPS_CERTIFICATE path, not user input
+		return os.ReadFile(x) //nolint:gosec // G304 false positive: x is the operator-supplied PRMIRROR_SERVER_HTTPS_CERTIFICATE path, not user input
 	default:
 		return nil, errors.New("unexpected cert/key type (want string path or []byte PEM)")
 	}

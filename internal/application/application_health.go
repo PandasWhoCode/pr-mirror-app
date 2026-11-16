@@ -6,7 +6,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/servercurio/go-echo-starter/internal/health"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/health"
 )
 
 // HealthRegistry returns the per-Application health registry. Wire this into

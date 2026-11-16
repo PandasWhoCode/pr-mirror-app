@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/api/std/endpoint"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/api/std/module"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/api/std/route"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/router"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/version"
 	"github.com/labstack/echo/v5"
-	"github.com/servercurio/go-echo-starter/internal/api/std/endpoint"
-	"github.com/servercurio/go-echo-starter/internal/api/std/module"
-	"github.com/servercurio/go-echo-starter/internal/api/std/route"
-	"github.com/servercurio/go-echo-starter/internal/router"
-	"github.com/servercurio/go-echo-starter/internal/version"
 
 	echoSwagger "github.com/swaggo/echo-swagger/v2"
 )
@@ -23,7 +23,7 @@ import (
 // then injects CSS to: (a) hide the spec URL/picker controls — those are
 // the `.download-url-wrapper` block in the topbar, the only purpose of
 // which would be switching between multiple specs; and (b) replace the
-// default Swagger logo image with the Server Curio brandmark served from
+// default Swagger logo image with the project brandmark served from
 // the same prefix as a static asset. The other UI assets
 // (swagger-ui-bundle.js, swagger-ui.css, etc.) continue to be served by
 // echo-swagger's wildcard handler under the same prefix.
@@ -77,7 +77,7 @@ const swaggerIndexTemplate = `<!DOCTYPE html>
 <div id="swagger-ui"></div>
 <footer class="swagger-footer">
   <div>Version <code>%[2]s</code> · Commit <code>%[3]s</code></div>
-  <div>Copyright © %[4]d Server Curio · Licensed under the <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache License, Version 2.0</a></div>
+  <div>Copyright © %[4]d PandasWhoCode · Licensed under the <a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener noreferrer">Apache License, Version 2.0</a></div>
 </footer>
 <script src="./swagger-ui-bundle.js"></script>
 <script src="./swagger-ui-standalone-preset.js"></script>
@@ -130,7 +130,7 @@ type SwaggerOptions struct {
 //     wildcards, so this beats the `/<Path>/*` route below for this exact
 //     path.
 //
-//   - <opts.Path>/logo.svg    → embedded Server Curio brandmark, referenced
+//   - <opts.Path>/logo.svg    → embedded project brandmark, referenced
 //     by the index page's CSS. Likewise beats the wildcard.
 //
 //   - <opts.Path>/*           → echo-swagger handler. Serves the Swagger UI

@@ -5,9 +5,9 @@ package application
 import (
 	"errors"
 
-	"github.com/servercurio/go-echo-starter/internal/database"
-	"github.com/servercurio/go-echo-starter/internal/env"
-	"github.com/servercurio/go-echo-starter/internal/logging"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/database"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/env"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/logging"
 )
 
 // Config is the daemon's top-level configuration aggregate. Each field is

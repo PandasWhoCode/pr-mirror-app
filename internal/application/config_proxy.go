@@ -7,9 +7,9 @@ import (
 	"net"
 	"strings"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/env"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/logging"
 	"github.com/rs/zerolog"
-	"github.com/servercurio/go-echo-starter/internal/env"
-	"github.com/servercurio/go-echo-starter/internal/logging"
 )
 
 // ProxyConfig captures the IP-extraction policy the daemon applies when

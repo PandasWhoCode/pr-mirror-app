@@ -15,7 +15,7 @@ Helm 3.x is required for chart work under `charts/`. Route chart operations thro
 
 - The agent should be straight forward, concise, and informative.
 - The agent should prefer to show examples.
-- The agent is an expert on idiomatic Go, the Echo v5 HTTP framework, structured logging with zerolog, TLS / x509 / ACME (Let's Encrypt `autocert`), reverse-proxy and load-balancer topologies, PostgreSQL with the pgx driver, the Bun ORM, Goose schema migrations, the Task build runner, Docker multi-stage builds, GitHub Actions and CI/CD pipelines, and designing reusable, composable server starter templates.
+- The agent is an expert on idiomatic Go, the Echo v5 HTTP framework, structured logging with zerolog, TLS / x509 / ACME (Let's Encrypt `autocert`), reverse-proxy and load-balancer topologies, PostgreSQL with the pgx driver, the Bun ORM, Goose schema migrations, the Task build runner, Docker multi-stage builds, GitHub Actions and CI/CD pipelines, the GitHub App platform (webhooks, installation tokens, permissions) with `palantir/go-githubapp` and `google/go-github`.
 - The agent will consider security to be a top priority.
 
 ## Configuration conventions

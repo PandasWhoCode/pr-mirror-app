@@ -6,8 +6,8 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/env"
 	"github.com/rs/zerolog"
-	"github.com/servercurio/go-echo-starter/internal/env"
 )
 
 // OpenAPIConfig controls runtime exposure of the OpenAPI 3.0 spec generated

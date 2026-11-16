@@ -13,27 +13,27 @@ on:
         description: "Node.js Version:"
         type: string
         required: false
-        default: "22"
+        default: "26"
       go-version:
         description: "Go Version:"
         type: string
         required: false
-        default: "1.27.1"
+        default: "1.27.4"
       task-version:
         description: "Task Version:"
         type: string
         required: false
-        default: "3.39.2"
+        default: "3.54.0"
       helm-version:
         description: "Helm release version (required for helm:package and helm:push:oci):"
         type: string
         required: false
-        default: "v3.20.2"
+        default: "v3.22.1"
       syft-version:
         description: "Syft release version (used for container/helm SBOM generation):"
         type: string
         required: false
-        default: "v1.18.1"
+        default: "v1.57.1"
     outputs:
       version:
         description: "Version produced by semantic-release (empty if no release)"
@@ -75,7 +75,7 @@ jobs:
       released: ${{ steps.semantic-release.outputs.released }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: audit
 
@@ -87,7 +87,7 @@ jobs:
           token: ${{ secrets.release-token }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ inputs.node-version }}
 
@@ -98,7 +98,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup GoLang
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ inputs.go-version }}
           check-latest: false
@@ -135,13 +135,13 @@ jobs:
       # --------------------------------------------------------------------
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a # v4.3.0
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - name: Login to GHCR (docker)
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -194,13 +194,13 @@ jobs:
         # install scripts to function.
         run: |
           npm install -g --ignore-scripts \
-            semantic-release@24.2.4 \
+            semantic-release@26.0.1 \
             @semantic-release/commit-analyzer@13.0.1 \
-            @semantic-release/release-notes-generator@14.0.3 \
+            @semantic-release/release-notes-generator@14.1.1 \
             @semantic-release/exec@7.1.0 \
-            @semantic-release/git@10.0.1 \
-            @semantic-release/github@11.0.1 \
-            conventional-changelog-conventionalcommits@8.0.0
+            @semantic-release/git@11.0.1 \
+            @semantic-release/github@12.0.11 \
+            conventional-changelog-conventionalcommits@9.3.1
 
       - name: Run Semantic Release
         id: semantic-release
@@ -244,24 +244,24 @@ jobs:
           # and its signature, and every SBOM (.json/.xml + .asc). Exclude
           # *.digest (workflow scratch files, not released).
           subject-path: |
-            bin/appsvrd-linux-amd64
-            bin/appsvrd-linux-amd64.sha256
-            bin/appsvrd-linux-amd64.sha256.asc
-            bin/appsvrd-linux-arm64
-            bin/appsvrd-linux-arm64.sha256
-            bin/appsvrd-linux-arm64.sha256.asc
-            bin/appsvrd-darwin-amd64
-            bin/appsvrd-darwin-amd64.sha256
-            bin/appsvrd-darwin-amd64.sha256.asc
-            bin/appsvrd-darwin-arm64
-            bin/appsvrd-darwin-arm64.sha256
-            bin/appsvrd-darwin-arm64.sha256.asc
-            bin/appsvrd-windows-amd64
-            bin/appsvrd-windows-amd64.sha256
-            bin/appsvrd-windows-amd64.sha256.asc
-            bin/appsvrd-windows-arm64
-            bin/appsvrd-windows-arm64.sha256
-            bin/appsvrd-windows-arm64.sha256.asc
+            bin/prmirror-linux-amd64
+            bin/prmirror-linux-amd64.sha256
+            bin/prmirror-linux-amd64.sha256.asc
+            bin/prmirror-linux-arm64
+            bin/prmirror-linux-arm64.sha256
+            bin/prmirror-linux-arm64.sha256.asc
+            bin/prmirror-darwin-amd64
+            bin/prmirror-darwin-amd64.sha256
+            bin/prmirror-darwin-amd64.sha256.asc
+            bin/prmirror-darwin-arm64
+            bin/prmirror-darwin-arm64.sha256
+            bin/prmirror-darwin-arm64.sha256.asc
+            bin/prmirror-windows-amd64
+            bin/prmirror-windows-amd64.sha256
+            bin/prmirror-windows-amd64.sha256.asc
+            bin/prmirror-windows-arm64
+            bin/prmirror-windows-arm64.sha256
+            bin/prmirror-windows-arm64.sha256.asc
             bin/sbom.json
             bin/sbom.xml
             bin/sbom.json.asc
@@ -270,9 +270,9 @@ jobs:
             bin/container-sbom.xml
             bin/container-sbom.json.asc
             bin/container-sbom.xml.asc
-            bin/go-echo-starter-${{ steps.semantic-release.outputs.version }}.tgz
-            bin/go-echo-starter-${{ steps.semantic-release.outputs.version }}.tgz.sha256
-            bin/go-echo-starter-${{ steps.semantic-release.outputs.version }}.tgz.sha256.asc
+            bin/pr-mirror-app-${{ steps.semantic-release.outputs.version }}.tgz
+            bin/pr-mirror-app-${{ steps.semantic-release.outputs.version }}.tgz.sha256
+            bin/pr-mirror-app-${{ steps.semantic-release.outputs.version }}.tgz.sha256.asc
             bin/helm-sbom.json
             bin/helm-sbom.xml
             bin/helm-sbom.json.asc
@@ -292,7 +292,7 @@ jobs:
         if: ${{ inputs.dry-run == false && steps.semantic-release.outputs.released == 'true' }}
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-name: ghcr.io/servercurio/go-echo-starter
+          subject-name: ghcr.io/pandaswhocode/pr-mirror-app
           subject-digest: ${{ steps.read-digests.outputs.container_digest }}
           push-to-registry: true
 
@@ -300,7 +300,7 @@ jobs:
         if: ${{ inputs.dry-run == false && steps.semantic-release.outputs.released == 'true' }}
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-name: ghcr.io/servercurio/charts/go-echo-starter
+          subject-name: ghcr.io/pandaswhocode/charts/pr-mirror-app
           subject-digest: ${{ steps.read-digests.outputs.helm_digest }}
           push-to-registry: true
 
@@ -314,12 +314,12 @@ jobs:
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
           subject-path: |
-            bin/appsvrd-linux-amd64
-            bin/appsvrd-linux-arm64
-            bin/appsvrd-darwin-amd64
-            bin/appsvrd-darwin-arm64
-            bin/appsvrd-windows-amd64
-            bin/appsvrd-windows-arm64
+            bin/prmirror-linux-amd64
+            bin/prmirror-linux-arm64
+            bin/prmirror-darwin-amd64
+            bin/prmirror-darwin-arm64
+            bin/prmirror-windows-amd64
+            bin/prmirror-windows-arm64
           sbom-path: bin/sbom.json
 
       - name: Attest Go CycloneDX XML SBOM against each binary
@@ -327,19 +327,19 @@ jobs:
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
           subject-path: |
-            bin/appsvrd-linux-amd64
-            bin/appsvrd-linux-arm64
-            bin/appsvrd-darwin-amd64
-            bin/appsvrd-darwin-arm64
-            bin/appsvrd-windows-amd64
-            bin/appsvrd-windows-arm64
+            bin/prmirror-linux-amd64
+            bin/prmirror-linux-arm64
+            bin/prmirror-darwin-amd64
+            bin/prmirror-darwin-arm64
+            bin/prmirror-windows-amd64
+            bin/prmirror-windows-arm64
           sbom-path: bin/sbom.xml
 
       - name: Attest container CycloneDX JSON SBOM against container image
         if: ${{ inputs.dry-run == false && steps.semantic-release.outputs.released == 'true' }}
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
-          subject-name: ghcr.io/servercurio/go-echo-starter
+          subject-name: ghcr.io/pandaswhocode/pr-mirror-app
           subject-digest: ${{ steps.read-digests.outputs.container_digest }}
           sbom-path: bin/container-sbom.json
           push-to-registry: true
@@ -348,7 +348,7 @@ jobs:
         if: ${{ inputs.dry-run == false && steps.semantic-release.outputs.released == 'true' }}
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
-          subject-name: ghcr.io/servercurio/go-echo-starter
+          subject-name: ghcr.io/pandaswhocode/pr-mirror-app
           subject-digest: ${{ steps.read-digests.outputs.container_digest }}
           sbom-path: bin/container-sbom.xml
           push-to-registry: true
@@ -357,21 +357,21 @@ jobs:
         if: ${{ inputs.dry-run == false && steps.semantic-release.outputs.released == 'true' }}
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
-          subject-path: bin/go-echo-starter-${{ steps.semantic-release.outputs.version }}.tgz
+          subject-path: bin/pr-mirror-app-${{ steps.semantic-release.outputs.version }}.tgz
           sbom-path: bin/helm-sbom.json
 
       - name: Attest helm CycloneDX XML SBOM against helm chart .tgz
         if: ${{ inputs.dry-run == false && steps.semantic-release.outputs.released == 'true' }}
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
-          subject-path: bin/go-echo-starter-${{ steps.semantic-release.outputs.version }}.tgz
+          subject-path: bin/pr-mirror-app-${{ steps.semantic-release.outputs.version }}.tgz
           sbom-path: bin/helm-sbom.xml
 
       - name: Attest helm CycloneDX JSON SBOM against helm OCI artifact
         if: ${{ inputs.dry-run == false && steps.semantic-release.outputs.released == 'true' }}
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
-          subject-name: ghcr.io/servercurio/charts/go-echo-starter
+          subject-name: ghcr.io/pandaswhocode/charts/pr-mirror-app
           subject-digest: ${{ steps.read-digests.outputs.helm_digest }}
           sbom-path: bin/helm-sbom.json
           push-to-registry: true
@@ -380,7 +380,7 @@ jobs:
         if: ${{ inputs.dry-run == false && steps.semantic-release.outputs.released == 'true' }}
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
         with:
-          subject-name: ghcr.io/servercurio/charts/go-echo-starter
+          subject-name: ghcr.io/pandaswhocode/charts/pr-mirror-app
           subject-digest: ${{ steps.read-digests.outputs.helm_digest }}
           sbom-path: bin/helm-sbom.xml
           push-to-registry: true

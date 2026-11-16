@@ -10,11 +10,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/database"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/logging"
 	"github.com/joomcode/errorx"
 	"github.com/labstack/echo/v5"
 	mw "github.com/labstack/echo/v5/middleware"
-	"github.com/servercurio/go-echo-starter/internal/database"
-	"github.com/servercurio/go-echo-starter/internal/logging"
 )
 
 // defaultInsecurePaths lists URI substrings that bypass the
@@ -264,7 +264,13 @@ func HTTPSRedirectWithConfig(cfg *TlsConfig) echo.MiddlewareFunc {
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c *echo.Context) error {
-			if c.Request().TLS != nil {
+			// c.Scheme() applies the server's SchemeExtractor (see
+			// configureProxySupport): in proxy mode, a trusted proxy that
+			// terminated TLS and sent X-Forwarded-Proto: https isn't
+			// redirected again (that would loop); otherwise only a real
+			// TLS connection counts. A proxy may report wss for a
+			// WebSocket upgrade, which is just as secure.
+			if scheme := c.Scheme(); scheme == "https" || scheme == "wss" {
 				return next(c)
 			}
 

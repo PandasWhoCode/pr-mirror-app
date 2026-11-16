@@ -11,8 +11,8 @@ import (
 	"github.com/labstack/echo/v5"
 	asrt "github.com/stretchr/testify/assert"
 
-	"github.com/servercurio/go-echo-starter/internal/openapi"
-	"github.com/servercurio/go-echo-starter/internal/version"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/openapi"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/version"
 )
 
 // attachSwagger wires SwaggerModule into a fresh Echo so each test case can
@@ -121,7 +121,7 @@ func TestSwaggerModule_RenderedIndexUsesConfiguredSpecURLOnly(t *testing.T) {
 // TestSwaggerModule_IndexHidesPickerKeepsBrandedTopbar pins the topbar
 // styling contract. We keep StandaloneLayout (so the topbar renders), but
 // hide the spec URL/picker controls (`.download-url-wrapper`) via CSS and
-// swap the default Swagger logo for the Server Curio brandmark served at
+// swap the default Swagger logo for the project brandmark served at
 // the sibling /logo.svg route. Three things must hold:
 //
 //   - the topbar is still rendered (StandaloneLayout in the bootstrap),
@@ -142,7 +142,7 @@ func TestSwaggerModule_IndexHidesPickerKeepsBrandedTopbar(t *testing.T) {
 	assert.Contains(body, ".download-url-wrapper { display: none",
 		"the spec URL/picker block must be hidden via CSS")
 	assert.Contains(body, `url("./logo.svg")`,
-		"the topbar must reference the Server Curio brandmark")
+		"the topbar must reference the project brandmark")
 	assert.Contains(body, `url: "/openapi.yaml"`,
 		"index.html must still pin the spec URL")
 }
@@ -194,7 +194,7 @@ func TestSwaggerModule_IndexRendersBuildAndLicenseFooter(t *testing.T) {
 			"footer must not leak the full commit hash — only the short prefix")
 	}
 
-	assert.Contains(body, "Server Curio",
+	assert.Contains(body, "PandasWhoCode",
 		"footer must carry the project copyright attribution")
 	assert.Contains(body, "Apache License, Version 2.0",
 		"footer must declare the license")

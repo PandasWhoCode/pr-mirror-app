@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/env"
 	"github.com/rs/zerolog"
-	"github.com/servercurio/go-echo-starter/internal/env"
 )
 
 // HttpConfig captures the HTTP listener parameters: bind address, port,

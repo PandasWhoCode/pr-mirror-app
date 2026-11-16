@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/errors"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/logging"
 	ex "github.com/joomcode/errorx"
-	"github.com/servercurio/go-echo-starter/internal/errors"
-	"github.com/servercurio/go-echo-starter/internal/logging"
 	"gopkg.in/yaml.v3"
 )
 

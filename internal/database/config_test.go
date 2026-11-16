@@ -19,11 +19,11 @@ func TestConfig_EnabledRequiresNonEmptyDSN(t *testing.T) {
 func TestConfig_FromEnvOverlaysDriverAndDSN(t *testing.T) {
 	assert := asrt.New(t)
 
-	t.Setenv("APP_DATABASE_DRIVER", "pgx")
-	t.Setenv("APP_DATABASE_DSN", "postgres://app@db.example.com:5432/app")
+	t.Setenv("PRMIRROR_DATABASE_DRIVER", "pgx")
+	t.Setenv("PRMIRROR_DATABASE_DSN", "postgres://app@db.example.com:5432/app")
 
 	cfg := DefaultConfig()
-	cfg.FromEnv("APP_DATABASE")
+	cfg.FromEnv("PRMIRROR_DATABASE")
 
 	assert.Equal("pgx", cfg.Driver)
 	assert.Equal("postgres://app@db.example.com:5432/app", cfg.DSN)

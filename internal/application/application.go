@@ -9,23 +9,23 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/config"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/health"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/logging"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/router"
 	"github.com/joomcode/errorx"
 	"github.com/labstack/echo/v5"
 	mw "github.com/labstack/echo/v5/middleware"
-	"github.com/servercurio/go-echo-starter/internal/config"
-	"github.com/servercurio/go-echo-starter/internal/health"
-	"github.com/servercurio/go-echo-starter/internal/logging"
-	"github.com/servercurio/go-echo-starter/internal/router"
 )
 
 // Default daemon identity strings. Embedded into Application by
 // NewApplication; cmd/daemon overrides them on the returned value when the
 // downstream binary needs a different name or env-var prefix.
 const (
-	defaultName              = "appsvrd"
-	defaultEnvPrefix         = "APP"
-	defaultConfigName        = "appsvrd"
-	defaultConfigPathElement = "appsvr"
+	defaultName              = "prmirror"
+	defaultEnvPrefix         = "PRMIRROR"
+	defaultConfigName        = "prmirror"
+	defaultConfigPathElement = "prmirror"
 )
 
 // Application is the daemon's top-level lifecycle owner: it holds the loaded

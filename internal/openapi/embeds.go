@@ -4,8 +4,8 @@ package openapi
 
 import _ "embed"
 
-// logoSVG is the Server Curio SC mark, copied here
-// from docs/logo-mark.svg by `go generate` (see generate_unix.go) and embedded
+// logoSVG is the project brandmark, copied here
+// from docs/assets/pr-mirror.svg by `go generate` (see generate_unix.go) and embedded
 // so the Swagger UI topbar can serve it without depending on a file on
 // disk at runtime.
 //

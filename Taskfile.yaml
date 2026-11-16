@@ -7,7 +7,7 @@ vars:
   # license-eye (github.com/apache/skywalking-eyes) version for lint:license and
   # license:fix; the only place it is pinned. CI runs `task lint:license`.
   LICENSE_EYE_VERSION: v0.9.0
-  PROJECT_NAME: AppSvr
+  PROJECT_NAME: PrMirror
   ARCH: [amd64, arm64]
   OS: [linux, darwin, windows]
   LDFLAGS: "-w -s"
@@ -15,21 +15,21 @@ vars:
 
 env:
   CGO_ENABLED: 0
-  APP_DAEMON_LOG_LEVEL: trace
-  APP_DAEMON_LOG_INCLUDE_CALLER: false
-  APP_HTTP_ACCESS_LOG_ENABLED: true
-  APP_HTTP_ACCESS_LOG_LEVEL: info
-  APP_HTTP_ACCESS_LOG_PRETTY_PRINT: true
-  APP_SERVER_HTTPS_ENABLED: true
+  PRMIRROR_DAEMON_LOG_LEVEL: trace
+  PRMIRROR_DAEMON_LOG_INCLUDE_CALLER: false
+  PRMIRROR_HTTP_ACCESS_LOG_ENABLED: true
+  PRMIRROR_HTTP_ACCESS_LOG_LEVEL: info
+  PRMIRROR_HTTP_ACCESS_LOG_PRETTY_PRINT: true
+  PRMIRROR_SERVER_HTTPS_ENABLED: true
   # Local dev binds to loopback so `task run:daemon` doesn't expose the
   # listener on every interface. The compiled binary still defaults to "" /
   # all-interfaces — this override only applies when running via Taskfile.
-  APP_SERVER_HTTP_BIND_ADDRESS: 127.0.0.1
-  APP_SERVER_HTTPS_BIND_ADDRESS: 127.0.0.1
-  APP_SERVER_HTTP_PORT: 8888
-  APP_SERVER_HTTPS_PORT: 4443
-  APP_SERVER_HTTPS_USE_ACME_ISSUER: false
-#  APP_SERVER_HTTPS_HOSTNAME: kubernetes.docker.internal
+  PRMIRROR_SERVER_HTTP_BIND_ADDRESS: 127.0.0.1
+  PRMIRROR_SERVER_HTTPS_BIND_ADDRESS: 127.0.0.1
+  PRMIRROR_SERVER_HTTP_PORT: 8888
+  PRMIRROR_SERVER_HTTPS_PORT: 4443
+  PRMIRROR_SERVER_HTTPS_USE_ACME_ISSUER: false
+#  PRMIRROR_SERVER_HTTPS_HOSTNAME: kubernetes.docker.internal
 
 tasks:
   default:
@@ -94,7 +94,7 @@ tasks:
     internal: true
     desc: "Run golangci-lint with the project's .golangci.yml"
     cmds:
-      - go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
+      - go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0
       - "$(go env GOPATH)/bin/golangci-lint run --timeout=5m ./..."
 
   lint:license:
@@ -157,7 +157,7 @@ tasks:
       - cmd: |
           set -e
           mkdir -p bin
-          go install github.com/CycloneDX/cyclonedx-gomod/cmd/cyclonedx-gomod@v1.7.0
+          go install github.com/CycloneDX/cyclonedx-gomod/cmd/cyclonedx-gomod@v1.12.0
           "$(go env GOPATH)/bin/cyclonedx-gomod" app -json=true -licenses -output bin/sbom.json -main cmd/daemon
           "$(go env GOPATH)/bin/cyclonedx-gomod" app -licenses -output bin/sbom.xml -main cmd/daemon
           # SBOMs are themselves manifests; sign them directly so consumers can verify the
@@ -179,7 +179,7 @@ tasks:
           set -e
           rm -f *.sha256
           found=0
-          for f in {{.PROJECT_NAME | lower}}d-*; do
+          for f in {{.PROJECT_NAME | lower}}-*; do
             case "$f" in
               *.sha256|*.asc) continue ;;
             esac
@@ -189,7 +189,7 @@ tasks:
             found=1
           done
           if [ "$found" -eq 0 ]; then
-            echo "no binaries matching '{{.PROJECT_NAME | lower}}d-*' found in bin/ — run 'task build' first" >&2
+            echo "no binaries matching '{{.PROJECT_NAME | lower}}-*' found in bin/ — run 'task build' first" >&2
             exit 1
           fi
         silent: true
@@ -204,13 +204,13 @@ tasks:
           set -e
           rm -f *.asc
           found=0
-          for hash_file in {{.PROJECT_NAME | lower}}d-*.sha256; do
+          for hash_file in {{.PROJECT_NAME | lower}}-*.sha256; do
             [ -f "$hash_file" ] || continue
             gpg --batch --yes --detach-sign --armor --output "${hash_file}.asc" "$hash_file"
             found=1
           done
           if [ "$found" -eq 0 ]; then
-            echo "no .sha256 files matching '{{.PROJECT_NAME | lower}}d-*.sha256' found in bin/ — run 'task hash' first" >&2
+            echo "no .sha256 files matching '{{.PROJECT_NAME | lower}}-*.sha256' found in bin/ — run 'task hash' first" >&2
             exit 1
           fi
         silent: true
@@ -257,9 +257,9 @@ tasks:
       - cmd: echo "Building {{.PROJECT_NAME}} daemon for ${GOOS}/${GOARCH}"
         silent: true
       - task: generate
-      - cmd: go build -o bin/{{.PROJECT_NAME | lower}}d-${GOOS}-${GOARCH} -ldflags="{{.LDFLAGS}}" -trimpath ./cmd/daemon
+      - cmd: go build -o bin/{{.PROJECT_NAME | lower}}-${GOOS}-${GOARCH} -ldflags="{{.LDFLAGS}}" -trimpath ./cmd/daemon
         silent: true
-      - cmd: chmod +x bin/{{.PROJECT_NAME | lower}}d-${GOOS}-${GOARCH}
+      - cmd: chmod +x bin/{{.PROJECT_NAME | lower}}-${GOOS}-${GOARCH}
         silent: true
 
   build:container:
@@ -293,7 +293,7 @@ tasks:
       - task: build:daemon
       - cmd: echo "Running {{.PROJECT_NAME}} daemon for ${GOOS}/${GOARCH}"
         silent: true
-      - cmd: ./bin/{{.PROJECT_NAME | lower}}d-${GOOS}-${GOARCH}
+      - cmd: ./bin/{{.PROJECT_NAME | lower}}-${GOOS}-${GOARCH}
         silent: true
 
   run:container:
@@ -311,7 +311,7 @@ tasks:
     internal: true
     desc: "Print the canonical container image registry/repository path"
     cmds:
-      - cmd: printf 'ghcr.io/servercurio/go-echo-starter'
+      - cmd: printf 'ghcr.io/pandaswhocode/pr-mirror-app'
         silent: true
 
   container:build:multiarch:
@@ -334,7 +334,7 @@ tasks:
             echo "internal/version/version.txt is empty — refusing to push an unversioned image" >&2
             exit 1
           fi
-          REPO="ghcr.io/servercurio/go-echo-starter"
+          REPO="ghcr.io/pandaswhocode/pr-mirror-app"
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             --provenance=true \
@@ -358,7 +358,7 @@ tasks:
             exit 1
           fi
           VERSION="$(cat internal/version/version.txt | tr -d '[:space:]')"
-          REPO="ghcr.io/servercurio/go-echo-starter"
+          REPO="ghcr.io/pandaswhocode/pr-mirror-app"
           syft "${REPO}:${VERSION}" -o cyclonedx-json=bin/container-sbom.json -o cyclonedx-xml=bin/container-sbom.xml
         silent: true
 
@@ -374,19 +374,19 @@ tasks:
         silent: true
 
   # ---------------------------------------------------------------------------
-  # Helm chart targets. The chart lives at charts/go-echo-starter/.
+  # Helm chart targets. The chart lives at charts/pr-mirror-app/.
   # `task helm:package` and below read the version from internal/version/version.txt
   # so semantic-release's prepareCmd is the single source of truth at release time.
   # ---------------------------------------------------------------------------
 
   helm:lint:
-    desc: "Run `helm lint` against charts/go-echo-starter"
+    desc: "Run `helm lint` against charts/pr-mirror-app"
     cmds:
-      - cmd: helm lint charts/go-echo-starter
+      - cmd: helm lint charts/pr-mirror-app
         silent: true
 
   helm:template:
-    desc: "Render charts/go-echo-starter with the full-values fixture, monitoring CRDs, and TLS overlaid — catches render errors across every gated resource"
+    desc: "Render charts/pr-mirror-app with the full-values fixture, monitoring CRDs, and TLS overlaid — catches render errors across every gated resource"
     cmds:
       - cmd: |
           set -e
@@ -394,9 +394,9 @@ tasks:
           # use it on a bare kind cluster. Overlay the TLS path here for render
           # validation; the existingSecret name does not need to exist for
           # `helm template`.
-          helm template release-name charts/go-echo-starter \
+          helm template release-name charts/pr-mirror-app \
             --debug \
-            --values charts/go-echo-starter/ci/full-values.yaml \
+            --values charts/pr-mirror-app/ci/full-values.yaml \
             --set tls.enabled=true \
             --set tls.existingSecret=overlay-ci-tls \
             --api-versions=monitoring.coreos.com/v1 \
@@ -405,7 +405,7 @@ tasks:
         silent: true
 
   helm:package:
-    desc: "Package charts/go-echo-starter into bin/go-echo-starter-<VERSION>.tgz. Reads VERSION from internal/version/version.txt."
+    desc: "Package charts/pr-mirror-app into bin/pr-mirror-app-<VERSION>.tgz. Reads VERSION from internal/version/version.txt."
     cmds:
       - cmd: |
           set -e
@@ -415,32 +415,32 @@ tasks:
             echo "internal/version/version.txt is empty — refusing to package an unversioned chart" >&2
             exit 1
           fi
-          helm package charts/go-echo-starter \
+          helm package charts/pr-mirror-app \
             --version "$VERSION" \
             --app-version "$VERSION" \
             --destination bin/
         silent: true
 
   helm:hash:
-    desc: "Generate SHA-256 hash for the packaged helm chart (writes bin/go-echo-starter-<VERSION>.tgz.sha256)"
+    desc: "Generate SHA-256 hash for the packaged helm chart (writes bin/pr-mirror-app-<VERSION>.tgz.sha256)"
     cmds:
       - cmd: |
           set -e
           VERSION="$(cat internal/version/version.txt | tr -d '[:space:]')"
-          TGZ="bin/go-echo-starter-${VERSION}.tgz"
+          TGZ="bin/pr-mirror-app-${VERSION}.tgz"
           [ -f "$TGZ" ] || { echo "$TGZ missing — run 'task helm:package' first" >&2; exit 1; }
-          ( cd bin && shasum -a 256 "go-echo-starter-${VERSION}.tgz" > "go-echo-starter-${VERSION}.tgz.sha256" )
+          ( cd bin && shasum -a 256 "pr-mirror-app-${VERSION}.tgz" > "pr-mirror-app-${VERSION}.tgz.sha256" )
         silent: true
 
   helm:sign:
-    desc: "GPG-sign the helm chart hash file (writes bin/go-echo-starter-<VERSION>.tgz.sha256.asc). The chart .tgz itself is NOT signed."
+    desc: "GPG-sign the helm chart hash file (writes bin/pr-mirror-app-<VERSION>.tgz.sha256.asc). The chart .tgz itself is NOT signed."
     deps:
       - helm:hash
     cmds:
       - cmd: |
           set -e
           VERSION="$(cat internal/version/version.txt | tr -d '[:space:]')"
-          HASH="bin/go-echo-starter-${VERSION}.tgz.sha256"
+          HASH="bin/pr-mirror-app-${VERSION}.tgz.sha256"
           gpg --batch --yes --detach-sign --armor --output "${HASH}.asc" "$HASH"
         silent: true
 
@@ -454,7 +454,7 @@ tasks:
             exit 1
           fi
           VERSION="$(cat internal/version/version.txt | tr -d '[:space:]')"
-          TGZ="bin/go-echo-starter-${VERSION}.tgz"
+          TGZ="bin/pr-mirror-app-${VERSION}.tgz"
           [ -f "$TGZ" ] || { echo "$TGZ missing — run 'task helm:package' first" >&2; exit 1; }
           syft "$TGZ" -o cyclonedx-json=bin/helm-sbom.json -o cyclonedx-xml=bin/helm-sbom.xml
         silent: true
@@ -483,15 +483,15 @@ tasks:
         silent: true
 
   helm:push:oci:
-    desc: "Push the packaged helm chart to GHCR's OCI registry (oci://ghcr.io/servercurio/charts). Workflow runs `helm registry login` first."
+    desc: "Push the packaged helm chart to GHCR's OCI registry (oci://ghcr.io/pandaswhocode/charts). Workflow runs `helm registry login` first."
     cmds:
       - cmd: |
           set -e
           VERSION="$(cat internal/version/version.txt | tr -d '[:space:]')"
-          TGZ="bin/go-echo-starter-${VERSION}.tgz"
+          TGZ="bin/pr-mirror-app-${VERSION}.tgz"
           [ -f "$TGZ" ] || { echo "$TGZ missing — run 'task helm:package' first" >&2; exit 1; }
           # `helm push` writes the digest to stderr; capture and persist it.
-          OUT="$(helm push "$TGZ" oci://ghcr.io/servercurio/charts 2>&1)"
+          OUT="$(helm push "$TGZ" oci://ghcr.io/pandaswhocode/charts 2>&1)"
           echo "$OUT"
           DIGEST="$(printf '%s\n' "$OUT" | awk '/^Digest: /{print $2}')"
           if [ -z "$DIGEST" ]; then
@@ -499,6 +499,6 @@ tasks:
             exit 1
           fi
           printf '%s' "$DIGEST" > bin/helm-oci.digest
-          echo "helm chart: oci://ghcr.io/servercurio/charts/go-echo-starter:${VERSION}@${DIGEST}"
+          echo "helm chart: oci://ghcr.io/pandaswhocode/charts/pr-mirror-app:${VERSION}@${DIGEST}"
         silent: true
 

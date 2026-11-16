@@ -5,12 +5,12 @@ package main
 import (
 	"os"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/api"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/application"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/logging"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/router"
 	_ "github.com/joomcode/errorx"
 	_ "github.com/labstack/echo/v5"
-	"github.com/servercurio/go-echo-starter/internal/api"
-	"github.com/servercurio/go-echo-starter/internal/application"
-	"github.com/servercurio/go-echo-starter/internal/logging"
-	"github.com/servercurio/go-echo-starter/internal/router"
 )
 
 func main() {

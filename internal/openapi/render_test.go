@@ -9,7 +9,7 @@ import (
 	asrt "github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 
-	"github.com/servercurio/go-echo-starter/internal/openapi"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/openapi"
 )
 
 func TestMarshalYAMLPrefixesLicenseHeader(t *testing.T) {

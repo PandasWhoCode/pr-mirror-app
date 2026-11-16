@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-# Default values for go-echo-starter.
+# Default values for pr-mirror-app.
 # yaml-language-server: $schema=values.schema.json
 
 # -- Number of pod replicas. Ignored when autoscaling.enabled=true.
@@ -8,7 +8,7 @@ replicaCount: 1
 
 image:
   # -- Container image registry/repository.
-  repository: ghcr.io/servercurio/go-echo-starter
+  repository: ghcr.io/pandaswhocode/pr-mirror-app
   # -- Image pull policy. One of Always, IfNotPresent, Never.
   pullPolicy: IfNotPresent
   # -- Image tag. Defaults to .Chart.AppVersion when empty.
@@ -191,19 +191,19 @@ extraVolumes: []
 extraVolumeMounts: []
 
 # -- TLS configuration. When enabled, the chart mounts an existing Secret containing tls.crt and tls.key
-#    and points the daemon at it via APP_SERVER_HTTPS_CERTIFICATE / APP_SERVER_HTTPS_KEY.
+#    and points the daemon at it via PRMIRROR_SERVER_HTTPS_CERTIFICATE / PRMIRROR_SERVER_HTTPS_KEY.
 tls:
   enabled: false
   # Name of an existing Kubernetes TLS-type Secret with keys tls.crt and tls.key.
   existingSecret: ""
-  mountPath: /etc/go-echo-starter/tls
+  mountPath: /etc/pr-mirror-app/tls
 
-# -- Flat map of non-secret env vars. Keys are env var names exactly as the daemon expects (APP_DAEMON_LOG_LEVEL, etc.).
+# -- Flat map of non-secret env vars. Keys are env var names exactly as the daemon expects (PRMIRROR_DAEMON_LOG_LEVEL, etc.).
 #    Rendered into a ConfigMap and consumed via envFrom.
 config: {}
-  # APP_DAEMON_LOG_LEVEL: info
-  # APP_HTTP_ACCESS_LOG_ENABLED: "true"
-  # APP_OPENAPI_ENABLED: "true"
+  # PRMIRROR_DAEMON_LOG_LEVEL: info
+  # PRMIRROR_HTTP_ACCESS_LOG_ENABLED: "true"
+  # PRMIRROR_OPENAPI_ENABLED: "true"
 
 # -- Chart-managed Secret. Default off — operators should normally supply Secrets out-of-band and reference them via envFrom.
 secret:

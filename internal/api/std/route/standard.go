@@ -5,9 +5,9 @@ package route
 import (
 	"strings"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/logging"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/router"
 	"github.com/labstack/echo/v5"
-	"github.com/servercurio/go-echo-starter/internal/logging"
-	"github.com/servercurio/go-echo-starter/internal/router"
 )
 
 // Standard is the canonical router.Route implementation: a path, a set of

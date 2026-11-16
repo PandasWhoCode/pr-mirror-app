@@ -3,6 +3,7 @@
 package application
 
 import (
+	"crypto/tls"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -12,9 +13,8 @@ import (
 )
 
 // TestSecurityMiddleware_HSTSOnTLS verifies the default Strict-Transport-Security
-// header is emitted on TLS requests (or X-Forwarded-Proto=https, which Echo's
-// Secure middleware treats as equivalent to satisfy load-balancer-terminated
-// TLS topologies). HSTSMaxAge = 31536000 (1 year) is the starter's default.
+// header is emitted on a request that arrived over TLS. HSTSMaxAge = 31536000
+// (1 year) is the default.
 func TestSecurityMiddleware_HSTSOnTLS(t *testing.T) {
 	app := newAppWithMiddleware(t, DefaultConfig())
 
@@ -23,7 +23,7 @@ func TestSecurityMiddleware_HSTSOnTLS(t *testing.T) {
 	})
 
 	req := httptest.NewRequest(http.MethodGet, "/probe", nil)
-	req.Header.Set(echo.HeaderXForwardedProto, "https")
+	req.TLS = &tls.ConnectionState{}
 	rec := httptest.NewRecorder()
 	app.httpServer.ServeHTTP(rec, req)
 
@@ -31,15 +31,70 @@ func TestSecurityMiddleware_HSTSOnTLS(t *testing.T) {
 		t.Fatalf("expected 200, got %d", rec.Code)
 	}
 
-	hsts := rec.Header().Get(echo.HeaderStrictTransportSecurity)
-	if hsts == "" {
-		t.Fatalf("expected Strict-Transport-Security on TLS request, got none")
+	assertDefaultHSTS(t, rec.Header().Get(echo.HeaderStrictTransportSecurity))
+}
+
+// TestSecurityMiddleware_HSTSViaTrustedProxy covers TLS terminated at a load
+// balancer: in either proxy mode, X-Forwarded-Proto=https from a trusted
+// proxy counts as HTTPS. The proxy is trusted either by Echo's defaults (a
+// private-network peer) or through TrustedIPRanges (a public address such as
+// a CDN or cloud load balancer), which checks that the configured ranges
+// reach the scheme extractor.
+func TestSecurityMiddleware_HSTSViaTrustedProxy(t *testing.T) {
+	cases := []struct {
+		name       string
+		remoteAddr string
+		trusted    []string
+	}{
+		{name: "private peer, default trust", remoteAddr: "10.0.0.5:43210"},
+		{name: "public peer, configured range", remoteAddr: "203.0.113.7:443", trusted: []string{"203.0.113.0/24"}},
 	}
-	if !strings.Contains(hsts, "max-age=31536000") {
-		t.Fatalf("expected max-age=31536000 in HSTS header, got %q", hsts)
+
+	for _, mode := range proxyModes {
+		for _, tc := range cases {
+			t.Run(mode+"/"+tc.name, func(t *testing.T) {
+				app := newAppWithMiddleware(t, proxyModeConfig(mode, tc.trusted...))
+				rec := serveProbe(app, tc.remoteAddr, "https")
+				assertDefaultHSTS(t, rec.Header().Get(echo.HeaderStrictTransportSecurity))
+			})
+		}
 	}
-	if !strings.Contains(hsts, "includeSubdomains") {
-		t.Fatalf("expected includeSubdomains in HSTS header, got %q", hsts)
+}
+
+// TestSecurityMiddleware_NoHSTSFromUntrustedForwardedProto guards against a
+// client faking HTTPS (GO-2026-6879): in either proxy mode, X-Forwarded-Proto
+// from an address that isn't a trusted proxy is ignored.
+func TestSecurityMiddleware_NoHSTSFromUntrustedForwardedProto(t *testing.T) {
+	for _, mode := range proxyModes {
+		t.Run(mode, func(t *testing.T) {
+			app := newAppWithMiddleware(t, proxyModeConfig(mode, "203.0.113.0/24"))
+			// public (TEST-NET-1), outside both the defaults and the configured range
+			rec := serveProbe(app, "192.0.2.1:43210", "https")
+			if hsts := rec.Header().Get(echo.HeaderStrictTransportSecurity); hsts != "" {
+				t.Fatalf("did not expect HSTS for a forwarded scheme from an untrusted address, got %q", hsts)
+			}
+		})
+	}
+}
+
+// TestSecurityMiddleware_DirectModeIgnoresForwardedProto verifies that in the
+// default direct mode, forwarded scheme headers are ignored even from a
+// loopback peer: only the connection itself decides whether it's HTTPS.
+func TestSecurityMiddleware_DirectModeIgnoresForwardedProto(t *testing.T) {
+	app := newAppWithMiddleware(t, DefaultConfig())
+
+	app.httpServer.GET("/probe", func(c *echo.Context) error {
+		return c.String(http.StatusOK, "ok")
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/probe", nil)
+	req.RemoteAddr = "127.0.0.1:43210"
+	req.Header.Set(echo.HeaderXForwardedProto, "https")
+	rec := httptest.NewRecorder()
+	app.httpServer.ServeHTTP(rec, req)
+
+	if hsts := rec.Header().Get(echo.HeaderStrictTransportSecurity); hsts != "" {
+		t.Fatalf("did not expect HSTS from a forwarded scheme in direct mode, got %q", hsts)
 	}
 }
 
@@ -76,7 +131,7 @@ func TestSecurityMiddleware_HSTSDisabledByConfig(t *testing.T) {
 	})
 
 	req := httptest.NewRequest(http.MethodGet, "/probe", nil)
-	req.Header.Set(echo.HeaderXForwardedProto, "https")
+	req.TLS = &tls.ConnectionState{}
 	rec := httptest.NewRecorder()
 	app.httpServer.ServeHTTP(rec, req)
 
@@ -108,9 +163,43 @@ func TestSecurityMiddleware_AlwaysOnHeaders(t *testing.T) {
 	}
 }
 
+// TestHTTPSRedirect_FollowsSchemeExtractor checks the HTTP-to-HTTPS redirect
+// uses the same trust rule as HSTS. A trusted proxy that terminated TLS and
+// forwards X-Forwarded-Proto: https must reach the handler (redirecting it
+// again would loop through the proxy), and so must wss, which a proxy may
+// report for a WebSocket upgrade; the same header from an untrusted peer,
+// or from any peer in direct mode, still gets the 308.
+func TestHTTPSRedirect_FollowsSchemeExtractor(t *testing.T) {
+	cases := []struct {
+		name       string
+		cfg        *Config
+		remoteAddr string
+		proto      string
+		wantCode   int
+	}{
+		{name: "xff mode, trusted proxy", cfg: proxyModeConfig(proxyModeXFF), remoteAddr: "10.0.0.5:43210", proto: "https", wantCode: http.StatusOK},
+		{name: "x-real-ip mode, trusted proxy", cfg: proxyModeConfig(proxyModeXRealIP), remoteAddr: "10.0.0.5:43210", proto: "https", wantCode: http.StatusOK},
+		{name: "xff mode, trusted proxy, wss", cfg: proxyModeConfig(proxyModeXFF), remoteAddr: "10.0.0.5:43210", proto: "wss", wantCode: http.StatusOK},
+		{name: "xff mode, untrusted peer", cfg: proxyModeConfig(proxyModeXFF), remoteAddr: "192.0.2.1:43210", proto: "https", wantCode: http.StatusPermanentRedirect},
+		{name: "direct mode, loopback peer", cfg: DefaultConfig(), remoteAddr: "127.0.0.1:43210", proto: "https", wantCode: http.StatusPermanentRedirect},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.cfg.Server.Https.Enabled = true
+			app := newAppWithMiddleware(t, tc.cfg)
+			rec := serveProbe(app, tc.remoteAddr, tc.proto)
+			if rec.Code != tc.wantCode {
+				t.Fatalf("expected %d, got %d (Location %q)", tc.wantCode, rec.Code, rec.Header().Get("Location"))
+			}
+		})
+	}
+}
+
 // newAppWithMiddleware builds an Application, wires the middleware stack from
-// the supplied config, and configures the HTTP server. Mirrors the production
-// boot order (NewApplication → Configure → Initialize) but skips the file/env
+// the supplied config, and configures the HTTP server and the proxy-dependent
+// IP and scheme extractors. Mirrors the production boot order
+// (NewApplication → Configure → Initialize) but skips the file/env
 // resolution since the test passes cfg in directly.
 func newAppWithMiddleware(t *testing.T, cfg *Config) *Application {
 	t.Helper()
@@ -119,5 +208,65 @@ func newAppWithMiddleware(t *testing.T, cfg *Config) *Application {
 	if err := app.configureHttpServer(); err != nil {
 		t.Fatalf("configureHttpServer: %v", err)
 	}
+	if err := app.configureProxySupport(); err != nil {
+		t.Fatalf("configureProxySupport: %v", err)
+	}
 	return app
+}
+
+const (
+	proxyModeXFF     = "xff"
+	proxyModeXRealIP = "x-real-ip"
+)
+
+// proxyModes lists both header-based proxy modes so trust tests run in each.
+var proxyModes = []string{proxyModeXFF, proxyModeXRealIP}
+
+// proxyModeConfig returns the default config switched to the given proxy
+// mode, trusting the default set (loopback, link-local, private nets) plus
+// any extra CIDR ranges.
+func proxyModeConfig(mode string, trustedRanges ...string) *Config {
+	cfg := DefaultConfig()
+	cfg.Proxy.UseDirectIP = false
+	switch mode {
+	case proxyModeXFF:
+		cfg.Proxy.UseXFFHeader = true
+	case proxyModeXRealIP:
+		cfg.Proxy.UseXRealIPHeader = true
+	default:
+		panic("unknown proxy mode " + mode)
+	}
+	cfg.Proxy.TrustedIPRanges = trustedRanges
+	return cfg
+}
+
+// serveProbe registers GET /probe on the HTTP server and sends it one
+// plain-HTTP request from remoteAddr with X-Forwarded-Proto set to
+// forwardedProto.
+func serveProbe(app *Application, remoteAddr, forwardedProto string) *httptest.ResponseRecorder {
+	app.httpServer.GET("/probe", func(c *echo.Context) error {
+		return c.String(http.StatusOK, "ok")
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/probe", nil)
+	req.RemoteAddr = remoteAddr
+	req.Header.Set(echo.HeaderXForwardedProto, forwardedProto)
+	rec := httptest.NewRecorder()
+	app.httpServer.ServeHTTP(rec, req)
+	return rec
+}
+
+// assertDefaultHSTS checks the header carries the default one-year max-age
+// and the includeSubdomains directive.
+func assertDefaultHSTS(t *testing.T, hsts string) {
+	t.Helper()
+	if hsts == "" {
+		t.Fatalf("expected Strict-Transport-Security, got none")
+	}
+	if !strings.Contains(hsts, "max-age=31536000") {
+		t.Fatalf("expected max-age=31536000 in HSTS header, got %q", hsts)
+	}
+	if !strings.Contains(hsts, "includeSubdomains") {
+		t.Fatalf("expected includeSubdomains in HSTS header, got %q", hsts)
+	}
 }

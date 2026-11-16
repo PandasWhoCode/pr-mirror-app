@@ -9,7 +9,7 @@ import (
 
 	asrt "github.com/stretchr/testify/assert"
 
-	"github.com/servercurio/go-echo-starter/internal/openapi"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/openapi"
 )
 
 func TestSchemaRegistry_Primitives(t *testing.T) {

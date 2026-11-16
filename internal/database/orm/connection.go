@@ -5,8 +5,8 @@ package orm
 import (
 	"sync"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/database"
 	"github.com/joomcode/errorx"
-	"github.com/servercurio/go-echo-starter/internal/database"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 

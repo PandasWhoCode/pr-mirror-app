@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/servercurio/go-echo-starter/internal/api"
-	"github.com/servercurio/go-echo-starter/internal/openapi"
-	"github.com/servercurio/go-echo-starter/internal/router"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/api"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/openapi"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/router"
 )
 
 // Pinned values used to make the rendered spec deterministic regardless of
@@ -20,7 +20,7 @@ import (
 // drift diff in CI.
 const (
 	stableVersion = "unreleased"
-	defaultTitle  = "AppSvr"
+	defaultTitle  = "PrMirror"
 )
 
 func main() {
