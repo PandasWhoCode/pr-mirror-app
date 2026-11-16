@@ -2,6 +2,10 @@
   ~ SPDX-License-Identifier: Apache-2.0
 -->
 
+<p align="center">
+  <img src="docs/assets/pr-mirror.svg" alt="PR-Mirror" width="160">
+</p>
+
 # pr-mirror-app
 
 A GitHub App, and the `prmirror` CLI, that mirror pull requests from forks into a branch of the base repository, so they run with the base repository's trusted CI.
@@ -556,3 +560,7 @@ The corresponding **public key** must be added to the GitHub account/org used to
 ## License
 
 See [LICENSE](LICENSE).
+
+<p align="center">
+  <a href="https://pandaswhocode.com"><img src="docs/assets/pwc.logo.svg" alt="PandasWhoCode" width="96"></a>
+</p>
