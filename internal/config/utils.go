@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/errors"
 	ex "github.com/joomcode/errorx"
-	"github.com/servercurio/go-echo-starter/internal/errors"
 )
 
 // validFilePathFn returns true if a path's FileInfo satisfies a caller-defined

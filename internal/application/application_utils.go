@@ -5,8 +5,8 @@ package application
 import (
 	"os"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/logging"
 	"github.com/joomcode/errorx"
-	"github.com/servercurio/go-echo-starter/internal/logging"
 )
 
 // resolveHomeDirectory looks up the current user's home directory and

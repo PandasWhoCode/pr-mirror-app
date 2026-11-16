@@ -10,11 +10,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/database"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/logging"
 	"github.com/joomcode/errorx"
 	"github.com/labstack/echo/v5"
 	mw "github.com/labstack/echo/v5/middleware"
-	"github.com/servercurio/go-echo-starter/internal/database"
-	"github.com/servercurio/go-echo-starter/internal/logging"
 )
 
 // defaultInsecurePaths lists URI substrings that bypass the

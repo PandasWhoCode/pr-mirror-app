@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/servercurio/go-echo-starter/internal/router"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/router"
 )
 
 // Spec is the top-level OpenAPI 3.0.3 document.

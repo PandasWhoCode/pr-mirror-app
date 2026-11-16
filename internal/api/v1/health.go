@@ -5,11 +5,11 @@ package v1
 import (
 	"net/http"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/api/std/endpoint"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/api/std/route"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/health"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/router"
 	"github.com/labstack/echo/v5"
-	"github.com/servercurio/go-echo-starter/internal/api/std/endpoint"
-	"github.com/servercurio/go-echo-starter/internal/api/std/route"
-	"github.com/servercurio/go-echo-starter/internal/health"
-	"github.com/servercurio/go-echo-starter/internal/router"
 )
 
 // LivenessRoute mounts the Kubernetes-style liveness probe at /livez.

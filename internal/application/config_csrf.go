@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/env"
 	"github.com/rs/zerolog"
-	"github.com/servercurio/go-echo-starter/internal/env"
 )
 
 // CsrfConfig captures the cross-site request forgery middleware policy.

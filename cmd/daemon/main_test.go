@@ -20,11 +20,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/servercurio/go-echo-starter/internal/env"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/env"
 	asrt "github.com/stretchr/testify/assert"
 )
 
-const envPrefix = "APP"
+const envPrefix = "PRMIRROR"
 
 // shutdownDelay is how long the test waits before signalling main() to exit.
 // It must be long enough for Configure → Initialize → Start to reach the
@@ -34,8 +34,8 @@ const shutdownDelay = 2 * time.Second
 func TestNoPanicsInMain(t *testing.T) {
 	assert := asrt.New(t)
 	// Suppress the log output to avoid cluttering the test output
-	assert.NoError(os.Setenv(env.AddPrefix(envPrefix, "daemon_log_enabled"), "false"), "failed to set APP_DAEMON_LOG_ENABLED")
-	assert.NoError(os.Setenv(env.AddPrefix(envPrefix, "http_access_log_enabled"), "false"), "failed to set APP_HTTP_ACCESS_LOG_ENABLED")
+	assert.NoError(os.Setenv(env.AddPrefix(envPrefix, "daemon_log_enabled"), "false"), "failed to set PRMIRROR_DAEMON_LOG_ENABLED")
+	assert.NoError(os.Setenv(env.AddPrefix(envPrefix, "http_access_log_enabled"), "false"), "failed to set PRMIRROR_HTTP_ACCESS_LOG_ENABLED")
 
 	// main() blocks inside application.Start until one of the configured
 	// shutdown signals arrives. Send SIGUSR1 to ourselves after a short delay

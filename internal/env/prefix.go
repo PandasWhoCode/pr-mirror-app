@@ -5,7 +5,7 @@ package env
 import "strings"
 
 // separator is the delimiter joining a prefix to a key in environment variable
-// names (e.g. "APP" + "_" + "SERVER_PORT").
+// names (e.g. "PRMIRROR" + "_" + "SERVER_PORT").
 const separator = "_"
 
 // AddPrefix joins prefix and key with the package separator, upper-casing

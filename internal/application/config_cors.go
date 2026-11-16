@@ -6,8 +6,8 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/env"
 	"github.com/rs/zerolog"
-	"github.com/servercurio/go-echo-starter/internal/env"
 )
 
 // CorsConfig captures the cross-origin policy applied to both the HTTP and

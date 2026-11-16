@@ -10,7 +10,7 @@
 
 This repository uses GitHub's [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability) to receive reports privately. To submit a report:
 
-1. Open <https://github.com/servercurio/go-echo-starter/security/advisories/new>.
+1. Open <https://github.com/PandasWhoCode/pr-mirror-app/security/advisories/new>.
 2. Provide a clear description of the issue, the affected component, and a minimal reproduction (commit hash, configuration, sample request, etc.).
 3. Suggest an impact assessment if you are able (CVSS vector or plain-language severity).
 
@@ -31,7 +31,7 @@ Out of scope:
 
 - Vulnerabilities in third-party dependencies. Report those upstream; if exploitation requires this project to expose them in a non-default way, that part of the chain is in scope.
 - Findings from automated scanners without a working proof of concept.
-- Configuration choices made by downstream consumers (this is a starter template — production decisions about TLS modes, reverse-proxy trust, auth, etc. are the deploying party's responsibility).
+- Configuration choices made by whoever deploys the App (TLS mode, reverse-proxy trust, and the GitHub App's installation scope are the deploying party's responsibility).
 
 ## Supported Versions
 

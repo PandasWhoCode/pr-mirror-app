@@ -4,18 +4,18 @@
 
 # Contributing
 
-Thanks for your interest in `go-echo-starter`. The repository is a starter template, so contributions are oriented toward keeping the scaffold clean, generic, and reusable rather than expanding feature scope.
+Thanks for your interest in `pr-mirror-app`, the GitHub App and `prmirror` CLI that mirror fork pull requests into the base repository.
 
 ## Before you start
 
 - **Open an issue first** for anything beyond a typo or one-line bug fix. Discussing scope and approach saves rework.
-- **Don't add downstream concerns.** Persistence drivers beyond the bundled pgx wiring, auth schemes, validation libraries, and domain models are intentionally out of scope. The template stays generic so consumers can layer their own choices.
+- **Keep the mirror's security model intact.** Mirroring runs a fork's code with the base repository's secrets, so changes to who can trigger a mirror, which commit is mirrored, or which permissions the App holds need an issue and a maintainer's sign-off before a pull request.
 
 ## Local setup
 
 ```sh
-git clone https://github.com/servercurio/go-echo-starter.git
-cd go-echo-starter
+git clone https://github.com/PandasWhoCode/pr-mirror-app.git
+cd pr-mirror-app
 task vendor
 task
 ```
@@ -64,7 +64,7 @@ This repo uses [Conventional Commits](https://www.conventionalcommits.org). The 
 | `feat`              | minor | `feat: add /metrics endpoint`           |
 | `fix`               | patch | `fix: handle nil DSN in IsHealthy`      |
 | `refactor`, `build` | patch | `refactor: extract proxy IP helper`     |
-| breaking change     | minor | `feat!: rename APP_OPENAPI_TITLE` (or `BREAKING CHANGE:` footer) |
+| breaking change     | minor | `feat!: rename PRMIRROR_OPENAPI_TITLE` (or `BREAKING CHANGE:` footer) |
 | `chore`, `ci`, `docs`, `style`, `test` | none | `docs: clarify CORS default` |
 
 Subject line: imperative mood, no trailing period, ≤72 chars. The `prepare-commit-msg` hook will append your DCO line automatically.

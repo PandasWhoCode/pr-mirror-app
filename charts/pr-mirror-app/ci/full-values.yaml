@@ -4,7 +4,7 @@
 # Every optional resource is enabled, so this fixture catches render regressions in
 # ServiceMonitor / PodMonitor / PodLogs / Ingress / HPA / NetworkPolicy / PDB / TLS.
 image:
-  repository: appsvr
+  repository: prmirror
   tag: latest
   pullPolicy: IfNotPresent
 
@@ -16,18 +16,18 @@ podLabels:
   tier: api
 
 config:
-  APP_DAEMON_LOG_LEVEL: debug
-  APP_HTTP_ACCESS_LOG_ENABLED: "true"
-  APP_OPENAPI_ENABLED: "true"
+  PRMIRROR_DAEMON_LOG_LEVEL: debug
+  PRMIRROR_HTTP_ACCESS_LOG_ENABLED: "true"
+  PRMIRROR_OPENAPI_ENABLED: "true"
 
 # Inline secret used purely so envFrom resolves cleanly during `helm template`.
 secret:
   create: true
   stringData:
-    APP_FAKE_TOKEN: "ci-only"
+    PRMIRROR_FAKE_TOKEN: "ci-only"
 
 env:
-  - name: APP_DAEMON_LOG_PRETTY_PRINT
+  - name: PRMIRROR_DAEMON_LOG_PRETTY_PRINT
     value: "false"
 
 envFrom:
@@ -148,4 +148,4 @@ topologySpreadConstraints:
     whenUnsatisfiable: ScheduleAnyway
     labelSelector:
       matchLabels:
-        app.kubernetes.io/name: go-echo-starter
+        app.kubernetes.io/name: pr-mirror-app

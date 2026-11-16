@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 apiVersion: v2
-name: go-echo-starter
-description: Echo v5 HTTP/HTTPS daemon starter with structured logging, health endpoints, and OpenAPI.
+name: pr-mirror-app
+description: GitHub App that mirrors fork pull requests into the base repository so they run with trusted CI.
 type: application
 
 # version and appVersion are rewritten by `task helm:package` at release time
@@ -12,12 +12,12 @@ appVersion: "0.0.0"
 
 kubeVersion: ">=1.27.0-0"
 
-home: https://github.com/servercurio/go-echo-starter
+home: https://github.com/PandasWhoCode/pr-mirror-app
 sources:
-  - https://github.com/servercurio/go-echo-starter
+  - https://github.com/PandasWhoCode/pr-mirror-app
 maintainers:
-  - name: ServerCurio
-    url: https://github.com/servercurio
+  - name: PandasWhoCode
+    url: https://github.com/PandasWhoCode
 
 icon: ""
 

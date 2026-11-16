@@ -3,9 +3,9 @@
 package api
 
 import (
-	"github.com/servercurio/go-echo-starter/internal/api/std/module"
-	v1 "github.com/servercurio/go-echo-starter/internal/api/v1"
-	"github.com/servercurio/go-echo-starter/internal/router"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/api/std/module"
+	v1 "github.com/PandasWhoCode/pr-mirror-app/internal/api/v1"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/router"
 )
 
 // Module identity and URL prefix for the umbrella api module. Kept as

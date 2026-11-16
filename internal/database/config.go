@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/env"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/obfusicate"
 	"github.com/rs/zerolog"
-	"github.com/servercurio/go-echo-starter/internal/env"
-	"github.com/servercurio/go-echo-starter/internal/obfusicate"
 )
 
 // Config holds the database connection parameters and pool sizing.
@@ -49,7 +49,7 @@ func (c *Config) Enabled() bool {
 }
 
 // FromEnv overlays Config fields with values from environment variables under
-// the given prefix (e.g. APP_DATABASE_DRIVER, APP_DATABASE_DSN).
+// the given prefix (e.g. PRMIRROR_DATABASE_DRIVER, PRMIRROR_DATABASE_DSN).
 func (c *Config) FromEnv(prefix string) {
 	env.SetStringValue(prefix, "driver", &c.Driver)
 	env.SetStringValue(prefix, "dsn", &c.DSN)

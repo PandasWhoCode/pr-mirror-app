@@ -118,13 +118,13 @@ jobs:
           set -euo pipefail
           # Match the image reference used by both ci value fixtures.
           # helm/kind-action does not load images itself; do that here.
-          kind load docker-image appsvr:latest --name ct
+          kind load docker-image prmirror:latest --name ct
 
       - name: Chart Testing Install
         run: |
           set -euo pipefail
           # ct iterates each ci/*-values.yaml file and runs a separate `helm install --wait`.
-          # Both ci/default-values.yaml and ci/full-values.yaml point at appsvr:latest (loaded above).
+          # Both ci/default-values.yaml and ci/full-values.yaml point at prmirror:latest (loaded above).
           # The full-values fixture intentionally leaves tls.enabled=false so it installs cleanly
           # on a bare cluster; TLS render coverage is exercised by the lint workflow's helm:template.
           ct install \

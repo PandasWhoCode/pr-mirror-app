@@ -8,11 +8,11 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	apperrors "github.com/servercurio/go-echo-starter/internal/errors"
-	"github.com/servercurio/go-echo-starter/internal/logging"
-	"github.com/servercurio/go-echo-starter/internal/openapi"
-	"github.com/servercurio/go-echo-starter/internal/router"
-	"github.com/servercurio/go-echo-starter/internal/version"
+	apperrors "github.com/PandasWhoCode/pr-mirror-app/internal/errors"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/logging"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/openapi"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/router"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/version"
 )
 
 // initializeOpenAPI builds the OpenAPI spec from every currently registered

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-module github.com/servercurio/go-echo-starter
+module github.com/PandasWhoCode/pr-mirror-app
 
 go 1.27
 

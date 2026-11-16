@@ -5,9 +5,9 @@ package database
 import (
 	"embed"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/logging"
 	"github.com/joomcode/errorx"
 	"github.com/pressly/goose/v3"
-	"github.com/servercurio/go-echo-starter/internal/logging"
 )
 
 // migrationFS holds the Goose SQL migration files embedded at build time.

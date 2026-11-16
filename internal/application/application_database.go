@@ -5,10 +5,10 @@ package application
 import (
 	"context"
 
-	"github.com/servercurio/go-echo-starter/internal/database"
-	"github.com/servercurio/go-echo-starter/internal/database/orm"
-	apperrors "github.com/servercurio/go-echo-starter/internal/errors"
-	"github.com/servercurio/go-echo-starter/internal/logging"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/database"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/database/orm"
+	apperrors "github.com/PandasWhoCode/pr-mirror-app/internal/errors"
+	"github.com/PandasWhoCode/pr-mirror-app/internal/logging"
 )
 
 // IsDatabaseHealthy reports whether the configured database is currently

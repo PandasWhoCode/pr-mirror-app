@@ -5,8 +5,8 @@ package application
 import (
 	"fmt"
 
+	"github.com/PandasWhoCode/pr-mirror-app/internal/env"
 	"github.com/rs/zerolog"
-	"github.com/servercurio/go-echo-starter/internal/env"
 )
 
 // SecurityConfig captures the response-header policy applied by the
